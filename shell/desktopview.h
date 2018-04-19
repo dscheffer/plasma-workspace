@@ -41,7 +41,7 @@ class DesktopView : public PlasmaQuick::ContainmentView
     //What kind of plasma session we're in: are we in a full workspace, an application?...
     Q_PROPERTY(SessionType sessionType READ sessionType CONSTANT)
 
-    Q_PROPERTY(QList<QQuickItem *> candidateContainments READ candidateContainmentsGraphicItems NOTIFY candidateContainmentsChanged)
+    Q_PROPERTY(QList<QObject *> candidateContainments READ candidateContainmentsGraphicItems NOTIFY candidateContainmentsChanged)
 
 public:
     enum WindowType {
@@ -75,7 +75,7 @@ public:
 
     SessionType sessionType() const;
 
-    QList<QQuickItem *> candidateContainmentsGraphicItems() const;
+    QList<QObject *> candidateContainmentsGraphicItems() const;
 
 protected:
     bool event(QEvent *e) override;

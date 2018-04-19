@@ -204,15 +204,15 @@ DesktopView::SessionType DesktopView::sessionType() const
     }
 }
 
-QList<QQuickItem *> DesktopView::candidateContainmentsGraphicItems() const
+QList<QObject *> DesktopView::candidateContainmentsGraphicItems() const
 {
-    QList<QQuickItem *> list;
+    QList<QObject *> list;
     if (!containment()) {
         return list;
     }
 
     for (auto cont : corona()->containmentsForScreen(containment()->screen())) {
-        list << cont->property("_plasma_graphicObject").value<QQuickItem *>();
+        list << cont->property("_plasma_graphicObject").value<QObject *>();
     }
     return list;
 }
