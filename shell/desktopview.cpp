@@ -30,6 +30,7 @@
 #include <kwindowsystem.h>
 #include <klocalizedstring.h>
 #include <KAuthorized>
+#include <kactivities/controller.h>
 
 #include <KPackage/Package>
 
@@ -57,12 +58,13 @@ DesktopView::DesktopView(Plasma::Corona *corona, QScreen *targetScreen)
 
     QObject::connect(corona, &Plasma::Corona::kPackageChanged,
                      this, &DesktopView::coronaPackageChanged);
-    QObject::connect(corona, &Plasma::Corona::containmentCreated,
-                     this, [this](Plasma::Containment *cont) {
-                         if (cont->formFactor() == Plasma::Types::Planar) {
-                             emit candidateContainmentsChanged();
-                        }
-                    });
+
+    KActivities::Controller *m_activityController = new KActivities::Controller(this);
+    
+    QObject::connect(m_activityController, &KActivities::Controller::activityAdded,
+                     this, &DesktopView::candidateContainmentsChanged);
+    QObject::connect(m_activityController, &KActivities::Controller::activityRemoved,
+                     this, &DesktopView::candidateContainmentsChanged);
 
     if (QQuickWindow::sceneGraphBackend() != QLatin1String("software")) {
         connect(this, &DesktopView::sceneGraphInitialized, this,
@@ -204,17 +206,17 @@ DesktopView::SessionType DesktopView::sessionType() const
     }
 }
 
-QList<QObject *> DesktopView::candidateContainmentsGraphicItems() const
+QVariantMap DesktopView::candidateContainmentsGraphicItems() const
 {
-    QList<QObject *> list;
+    QVariantMap map;
     if (!containment()) {
-        return list;
+        return map;
     }
 
     for (auto cont : corona()->containmentsForScreen(containment()->screen())) {
-        list << cont->property("_plasma_graphicObject").value<QObject *>();
+        map[cont->activity()] = cont->property("_plasma_graphicObject");
     }
-    return list;
+    return map;
 }
 
 bool DesktopView::event(QEvent *e)
