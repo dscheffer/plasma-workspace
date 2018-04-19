@@ -24,6 +24,7 @@
 #include <QQmlEngine>
 #include <QQmlContext>
 #include <QScreen>
+#include <QQuickItem>
 #include <qopenglshaderprogram.h>
 
 #include <kwindowsystem.h>
@@ -56,6 +57,12 @@ DesktopView::DesktopView(Plasma::Corona *corona, QScreen *targetScreen)
 
     QObject::connect(corona, &Plasma::Corona::kPackageChanged,
                      this, &DesktopView::coronaPackageChanged);
+    QObject::connect(corona, &Plasma::Corona::containmentCreated,
+                     this, [this](Plasma::Containment *cont) {
+                         if (cont->formFactor() == Plasma::Types::Planar) {
+                             emit candidateContainmentsChanged();
+                        }
+                    });
 
     if (QQuickWindow::sceneGraphBackend() != QLatin1String("software")) {
         connect(this, &DesktopView::sceneGraphInitialized, this,
@@ -195,6 +202,19 @@ DesktopView::SessionType DesktopView::sessionType() const
     } else {
         return ApplicationSession;
     }
+}
+
+QList<QQuickItem *> DesktopView::candidateContainmentsGraphicItems() const
+{
+    QList<QQuickItem *> list;
+    if (!containment()) {
+        return list;
+    }
+
+    for (auto cont : corona()->containmentsForScreen(containment()->screen())) {
+        list << cont->property("_plasma_graphicObject").value<QQuickItem *>();
+    }
+    return list;
 }
 
 bool DesktopView::event(QEvent *e)
